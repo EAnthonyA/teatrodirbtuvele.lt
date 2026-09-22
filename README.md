@@ -29,34 +29,6 @@ Registration details are never stored or logged. Gmail SMTP sends a plain-text n
 
 The in-memory rate limiter is designed for this single-container deployment. If the service is scaled to multiple instances, replace it with a shared rate-limit store.
 
-## Gmail setup
-
-1. Enable 2-Step Verification on `teatrodirbtuvele@gmail.com`.
-2. Create a Google App Password for this site and use the generated value as `SMTP_APP_PASSWORD`.
-3. Set `SMTP_USER=teatrodirbtuvele@gmail.com`.
-4. Rotate the app password by creating a new one, updating the GitHub secret, deploying, then revoking the old password.
-
-Never commit `.env`, a Gmail password, Cloudflare certificate, or private key.
-
-## Production deployment
-
-The application image is built as a standalone Next.js Docker image. `docker-compose.prod.yml` runs it as `teatrodirbtuvele-next` on the external `shared-proxy` network. A push to `main` runs checks, smoke-tests the Docker image, publishes it to Docker Hub, deploys it to the VPS, and reloads the shared `lazy-food` nginx proxy.
-
-### Required GitHub Actions secrets
-
-- `DOCKERHUB_USERNAME` and `DOCKERHUB_TOKEN`
-- `VPS_HOST`, `VPS_USER`, and `VPS_SSH_KEY`
-- `SMTP_USER` and `SMTP_APP_PASSWORD`
-
-The deploy workflow publishes `username/teatrodirbtuvele:latest`, copies the Compose and nginx files to the VPS, writes SMTP values to a protected runtime `.env`, starts the application, and reloads nginx.
-
 ### Shared nginx and Cloudflare
 
-The deploy workflow copies [nginx/conf.d/teatrodirbtuvele.lt.conf](nginx/conf.d/teatrodirbtuvele.lt.conf) into the `lazy-food` nginx configuration. These files are never committed:
-
-- `teatrodirbtuvele.lt.pem`
-- `teatrodirbtuvele.lt.key`
-
 In Cloudflare, create DNS records for both `teatrodirbtuvele.lt` and `www.teatrodirbtuvele.lt` that point to the VPS. Use Full (strict) encryption with an origin certificate covering both names. The proxy configuration redirects HTTP and `www` traffic to `https://teatrodirbtuvele.lt`.
-
-After deployment, verify the health endpoint from the container, both HTTPS hostnames, canonical redirects, and a real form submission arriving at `teatrodirbtuvele@gmail.com` with the parent address available through Reply-To.

@@ -1,0 +1,68 @@
+name: Deploy to VPS
+
+on:
+  workflow_run:
+    workflows: [Check and publish]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+      - name: Create deployment directory
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          script: mkdir -p ~/teatrodirbtuvele
+      - name: Copy Compose configuration
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          source: docker-compose.prod.yml
+          target: ~/teatrodirbtuvele
+      - name: Deploy application
+        uses: appleboy/ssh-action@v1
+        env:
+          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+          DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+          IMAGE_TAG: ${{ github.event.workflow_run.head_sha || github.sha }}
+          SMTP_USER: ${{ secrets.SMTP_USER }}
+          SMTP_APP_PASSWORD: ${{ secrets.SMTP_APP_PASSWORD }}
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          envs: DOCKERHUB_USERNAME,DOCKERHUB_TOKEN,IMAGE_TAG,SMTP_USER,SMTP_APP_PASSWORD
+          script: |
+            set -eu
+            mkdir -p ~/teatrodirbtuvele
+            docker network create shared-proxy || true
+            umask 077
+            printf 'SMTP_USER=%s\nSMTP_APP_PASSWORD=%s\n' "$SMTP_USER" "$SMTP_APP_PASSWORD" > ~/teatrodirbtuvele/.env
+            echo "$DOCKERHUB_TOKEN" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
+            cd ~/teatrodirbtuvele
+            DOCKERHUB_USERNAME="$DOCKERHUB_USERNAME" IMAGE_TAG="$IMAGE_TAG" docker compose -f docker-compose.prod.yml pull
+            DOCKERHUB_USERNAME="$DOCKERHUB_USERNAME" IMAGE_TAG="$IMAGE_TAG" docker compose -f docker-compose.prod.yml up -d --remove-orphans
+            docker image prune -f
+            for i in $(seq 1 12); do
+              if docker exec teatrodirbtuvele-next wget -qO- http://127.0.0.1:3000/api/health > /dev/null; then
+                exit 0
+              fi
+              sleep 5
+            done
+            exit 1

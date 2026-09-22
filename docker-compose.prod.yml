@@ -1,0 +1,22 @@
+services:
+  site:
+    image: ${DOCKERHUB_USERNAME}/teatrodirbtuvele:${IMAGE_TAG:?Set IMAGE_TAG to the published image tag}
+    container_name: teatrodirbtuvele-next
+    expose:
+      - "3000"
+    environment:
+      NODE_ENV: production
+      SMTP_USER: ${SMTP_USER}
+      SMTP_APP_PASSWORD: ${SMTP_APP_PASSWORD}
+    restart: unless-stopped
+    networks:
+      - shared-proxy
+    deploy:
+      resources:
+        limits:
+          memory: 256m
+          cpus: "0.5"
+
+networks:
+  shared-proxy:
+    external: true

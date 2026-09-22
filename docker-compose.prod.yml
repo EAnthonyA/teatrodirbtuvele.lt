@@ -1,0 +1,22 @@
+services:
+  site:
+    image: ${DOCKERHUB_USERNAME}/teatrodirbtuvele:${IMAGE_TAG:-latest}
+    container_name: teatrodirbtuvele-next
+    expose:
+      - "3000"
+    environment:
+      NODE_ENV: production
+    env_file:
+      - .env
+    restart: unless-stopped
+    networks:
+      - shared-proxy
+    deploy:
+      resources:
+        limits:
+          memory: 256m
+          cpus: "0.5"
+
+networks:
+  shared-proxy:
+    external: true

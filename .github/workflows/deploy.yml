@@ -1,0 +1,19 @@
+name: Deploy to production
+
+on:
+  workflow_run:
+    workflows: [Main CI Pipeline]
+    types: [completed]
+    branches: [main]
+
+jobs:
+  build-push:
+    if: github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push'
+    uses: ./.github/workflows/build-push.yml
+    secrets: inherit
+
+  deploy:
+    needs: build-push
+    if: always() && github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push' && needs.build-push.result == 'success'
+    uses: ./.github/workflows/deploy-vps.yml
+    secrets: inherit

@@ -25,15 +25,15 @@ npm run build
 
 `POST /api/registrations` accepts the child’s name and surname, age group, parent or guardian email address, and phone number. The route validates data again on the server, limits bodies to 12 KB, allows five requests per IP address in 15 minutes, and rejects a hidden honeypot field.
 
-Registration details are never stored or logged. Gmail SMTP sends a plain-text notification from `SMTP_USER` to `viola.aurea@gmail.com`; the parent’s email is only used as the message `Reply-To` address. The browser sees success only after Gmail accepts the send request.
+Registration details are never stored or logged. Gmail SMTP sends a plain-text notification from and to `teatrodirbtuvele@gmail.com`; the parent’s email is only used as the message `Reply-To` address. The browser sees success only after Gmail accepts the send request.
 
 The in-memory rate limiter is designed for this single-container deployment. If the service is scaled to multiple instances, replace it with a shared rate-limit store.
 
 ## Gmail setup
 
-1. Enable 2-Step Verification on `viola.aurea@gmail.com`.
+1. Enable 2-Step Verification on `teatrodirbtuvele@gmail.com`.
 2. Create a Google App Password for this site and use the generated value as `SMTP_APP_PASSWORD`.
-3. Set `SMTP_USER=viola.aurea@gmail.com`.
+3. Set `SMTP_USER=teatrodirbtuvele@gmail.com`.
 4. Rotate the app password by creating a new one, updating the GitHub secret, deploying, then revoking the old password.
 
 Never commit `.env`, a Gmail password, Cloudflare certificate, or private key.
@@ -59,4 +59,4 @@ Copy [deployment/lazy-food-proxy/teatrodirbtuvele.lt.conf](deployment/lazy-food-
 
 In Cloudflare, create DNS records for both `teatrodirbtuvele.lt` and `www.teatrodirbtuvele.lt` that point to the VPS. Use Full (strict) encryption with an origin certificate covering both names. The proxy configuration redirects HTTP and `www` traffic to `https://teatrodirbtuvele.lt`.
 
-After deployment, verify the health endpoint from the container, both HTTPS hostnames, canonical redirects, and a real form submission arriving at `viola.aurea@gmail.com` with the parent address available through Reply-To.
+After deployment, verify the health endpoint from the container, both HTTPS hostnames, canonical redirects, and a real form submission arriving at `teatrodirbtuvele@gmail.com` with the parent address available through Reply-To.

@@ -59,12 +59,12 @@ export async function POST(request: NextRequest) {
     });
     const info = await transporter.sendMail({
       from: smtpUser,
-      to: "viola.aurea@gmail.com",
+      to: smtpUser,
       replyTo: result.registration.parentEmail,
       subject: `Registracijos užklausa: ${result.registration.childName} ${result.registration.childSurname}`,
       text: registrationEmailText(result.registration),
     });
-    const accepted = info.accepted.some((address) => address.toLowerCase() === "viola.aurea@gmail.com");
+    const accepted = info.accepted.some((address) => address.toLowerCase() === smtpUser.toLowerCase());
     if (!accepted) {
       return response(502, "Nepavyko išsiųsti užklausos.");
     }

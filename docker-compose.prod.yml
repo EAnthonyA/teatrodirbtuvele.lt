@@ -1,13 +1,13 @@
 services:
   site:
-    image: ${DOCKERHUB_USERNAME}/teatrodirbtuvele:${IMAGE_TAG:?Set IMAGE_TAG to the published image tag}
+    image: ${DOCKERHUB_USERNAME}/teatrodirbtuvele:${IMAGE_TAG:-latest}
     container_name: teatrodirbtuvele-next
     expose:
       - "3000"
     environment:
       NODE_ENV: production
-      SMTP_USER: ${SMTP_USER}
-      SMTP_APP_PASSWORD: ${SMTP_APP_PASSWORD}
+    env_file:
+      - .env
     restart: unless-stopped
     networks:
       - shared-proxy

@@ -1,0 +1,76 @@
+name: Deploy to VPS
+
+on:
+  workflow_call:
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Create VPS directories
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          script: mkdir -p ~/teatrodirbtuvele ~/lazyfood/nginx/conf.d/certs
+      - name: Write SMTP settings
+        uses: appleboy/ssh-action@v1
+        env:
+          SMTP_USER: ${{ secrets.SMTP_USER }}
+          SMTP_APP_PASSWORD: ${{ secrets.SMTP_APP_PASSWORD }}
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          envs: SMTP_USER,SMTP_APP_PASSWORD
+          script: |
+            set -eu
+            umask 077
+            printf 'SMTP_USER=%s\nSMTP_APP_PASSWORD=%s\n' "$SMTP_USER" "$SMTP_APP_PASSWORD" > ~/teatrodirbtuvele/.env
+      - name: Copy deployment files
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          source: docker-compose.prod.yml,nginx/conf.d/teatrodirbtuvele.lt.conf
+          target: ~/teatrodirbtuvele
+      - name: Deploy and reload the proxy
+        uses: appleboy/ssh-action@v1
+        env:
+          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+          DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+          TEATRODIRBTUVELE_ORIGIN_CERT_B64: ${{ secrets.TEATRODIRBTUVELE_ORIGIN_CERT_B64 }}
+          TEATRODIRBTUVELE_ORIGIN_KEY_B64: ${{ secrets.TEATRODIRBTUVELE_ORIGIN_KEY_B64 }}
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          envs: DOCKERHUB_USERNAME,DOCKERHUB_TOKEN,TEATRODIRBTUVELE_ORIGIN_CERT_B64,TEATRODIRBTUVELE_ORIGIN_KEY_B64
+          script: |
+            set -eu
+            test -n "$TEATRODIRBTUVELE_ORIGIN_CERT_B64"
+            test -n "$TEATRODIRBTUVELE_ORIGIN_KEY_B64"
+            umask 077
+            printf '%s' "$TEATRODIRBTUVELE_ORIGIN_CERT_B64" | base64 -d > ~/lazyfood/nginx/conf.d/certs/teatrodirbtuvele.lt.pem
+            printf '%s' "$TEATRODIRBTUVELE_ORIGIN_KEY_B64" | base64 -d > ~/lazyfood/nginx/conf.d/certs/teatrodirbtuvele.lt.key
+            chmod 600 ~/lazyfood/nginx/conf.d/certs/teatrodirbtuvele.lt.key
+            cp ~/teatrodirbtuvele/nginx/conf.d/teatrodirbtuvele.lt.conf ~/lazyfood/nginx/conf.d/
+            docker network create shared-proxy || true
+            echo "$DOCKERHUB_TOKEN" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
+            cd ~/teatrodirbtuvele
+            DOCKERHUB_USERNAME="$DOCKERHUB_USERNAME" docker compose -f docker-compose.prod.yml pull
+            DOCKERHUB_USERNAME="$DOCKERHUB_USERNAME" docker compose -f docker-compose.prod.yml up -d --remove-orphans
+            docker exec lazyfood-nginx-prod nginx -t
+            docker exec lazyfood-nginx-prod nginx -s reload
+            docker image prune -f
+            for attempt in $(seq 1 12); do
+              if docker exec teatrodirbtuvele-next wget -qO- http://127.0.0.1:3000/api/health > /dev/null && curl -kfsS --max-time 5 --resolve teatrodirbtuvele.lt:443:127.0.0.1 https://teatrodirbtuvele.lt/ > /dev/null; then
+                exit 0
+              fi
+              sleep 5
+            done
+            exit 1

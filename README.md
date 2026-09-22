@@ -40,7 +40,7 @@ Never commit `.env`, a Gmail password, Cloudflare certificate, or private key.
 
 ## Production deployment
 
-The application image is built as a standalone Next.js Docker image. `docker-compose.prod.yml` runs it as `teatrodirbtuvele-next` on the external `shared-proxy` network. The existing `lazy-food` nginx service is the public edge proxy and must be updated separately.
+The application image is built as a standalone Next.js Docker image. `docker-compose.prod.yml` runs it as `teatrodirbtuvele-next` on the external `shared-proxy` network. A push to `main` runs checks, smoke-tests the Docker image, publishes it to Docker Hub, deploys it to the VPS, and reloads the shared `lazy-food` nginx proxy.
 
 ### Required GitHub Actions secrets
 
@@ -48,11 +48,11 @@ The application image is built as a standalone Next.js Docker image. `docker-com
 - `VPS_HOST`, `VPS_USER`, and `VPS_SSH_KEY`
 - `SMTP_USER` and `SMTP_APP_PASSWORD`
 
-The deploy workflow publishes `username/teatrodirbtuvele:<commit-sha>`, copies the Compose file to `~/teatrodirbtuvele` on the VPS, writes SMTP values to a protected runtime `.env`, and starts the matching image.
+The deploy workflow publishes `username/teatrodirbtuvele:latest`, copies the Compose and nginx files to the VPS, writes SMTP values to a protected runtime `.env`, starts the application, and reloads nginx.
 
 ### Shared nginx and Cloudflare
 
-Copy [deployment/lazy-food-proxy/teatrodirbtuvele.lt.conf](deployment/lazy-food-proxy/teatrodirbtuvele.lt.conf) into the `lazy-food` nginx configuration and deploy that repository’s proxy. Store these files in `lazy-food/nginx/conf.d/certs/` from deployment secrets, never Git:
+The deploy workflow copies [nginx/conf.d/teatrodirbtuvele.lt.conf](nginx/conf.d/teatrodirbtuvele.lt.conf) into the `lazy-food` nginx configuration. These files are never committed:
 
 - `teatrodirbtuvele.lt.pem`
 - `teatrodirbtuvele.lt.key`

@@ -4,8 +4,36 @@ import headerLogo from "../teatro_dirbtuvele_staciakampis_white_transparent.png"
 import logoWhite from "../teatro_dirbtuvele_logo_white_transparent.png";
 
 export default function Home() {
+  const organizationSchema = {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    name: "Teatro dirbtuvėlė",
+    url: "https://teatrodirbtuvele.lt",
+    logo: "https://teatrodirbtuvele.lt/opengraph-image.png",
+    description:
+      "Kūrybiniai teatro užsiėmimai 5-18 m. vaikams ir jaunimui Vilniuje, Pavilnyje.",
+    areaServed: {
+      "@type": "City",
+      name: "Vilnius",
+    },
+    location: {
+      "@type": "Place",
+      name: "Pavilnio bendruomenės namai",
+      address: {
+        "@type": "PostalAddress",
+        addressLocality: "Vilnius",
+        addressCountry: "LT",
+      },
+    },
+    knowsAbout: ["Teatro ugdymas", "Improvizacija", "Kūrybinės dirbtuvės"],
+  };
+
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }}
+      />
       <a className="skip-link" href="#pagrindinis-turinys">
         Pereiti prie turinio
       </a>

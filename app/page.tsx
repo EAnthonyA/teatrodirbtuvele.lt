@@ -79,13 +79,29 @@ export default function Home() {
 
         <section className="intro section-shell" aria-labelledby="about-heading">
           <p className="section-number" aria-hidden="true">01</p>
-          <div>
+          <div className="intro-heading">
             <p className="eyebrow">Teatras kaip žaidimas</p>
             <h2 id="about-heading">Balsas, kūnas, vaizduotė ir bendras kūrinys.</h2>
           </div>
-          <p className="intro-copy">
-            Dirbtuvėlėse kuriame, improvizuojame, klausomės vieni kitų ir atrandame savąjį balsą. Kiekvienas gali atsinešti save tokį, koks yra.
-          </p>
+          <div className="intro-side">
+            <p className="intro-copy">
+              Dirbtuvėlėse kuriame, improvizuojame, klausomės vieni kitų ir atrandame savąjį balsą. Kiekvienas gali atsinešti save tokį, koks yra.
+            </p>
+            <div className="leader">
+              <div className="leader-photo">
+                <Image
+                  alt="Užsiėmimų vadovės portretas"
+                  fill
+                  sizes="(max-width: 40rem) 9.5rem, 13rem"
+                  src="/images/profile.png"
+                />
+              </div>
+              <p className="leader-caption">
+                <span aria-hidden="true">✦</span>
+                Teatro mokytoja Violeta
+              </p>
+            </div>
+          </div>
         </section>
 
         <section className="groups" aria-labelledby="groups-heading">
@@ -125,6 +141,28 @@ export default function Home() {
           <div className="address-stamp" aria-label="Vilnius, Pavilnys">
             <span aria-hidden="true">⌖</span>
             <span>Vilnius<br />Pavilnys</span>
+          </div>
+        </section>
+
+        <section className="moment" aria-label="Žvilgsnis į teatro dirbtuves">
+          <div className="section-shell">
+            <p className="eyebrow">Žvilgsnis į dirbtuves</p>
+            <figure className="snapshot">
+              <span className="snapshot-tape snapshot-tape-left" aria-hidden="true" />
+              <span className="snapshot-tape snapshot-tape-right" aria-hidden="true" />
+              <div className="snapshot-frame">
+                <Image
+                  alt="Vaikai kartu su vadove sėdi ratu teatro užsiėmimo metu Pavilnio bendruomenės namuose"
+                  fill
+                  sizes="(max-width: 40rem) 86vw, 62vw"
+                  src="/images/activity-7.png"
+                />
+              </div>
+              <figcaption className="snapshot-caption">
+                <span aria-hidden="true">✦</span>
+                Ratu gimsta kiekviena istorija
+              </figcaption>
+            </figure>
           </div>
         </section>
 

@@ -1,7 +1,7 @@
 export type Registration = {
   childName: string;
   childSurname: string;
-  ageGroup: "5-11" | "12-18";
+  age: number;
   parentEmail: string;
   parentPhone: string;
   website?: string;
@@ -23,29 +23,28 @@ export function validateRegistration(input: unknown): ValidationResult {
   const data = input as Record<string, unknown>;
   const childName = cleanText(data.childName);
   const childSurname = cleanText(data.childSurname);
-  const ageGroup = data.ageGroup;
+  const age = Number(data.age);
   const parentEmail = cleanText(data.parentEmail).toLowerCase();
   const parentPhone = cleanText(data.parentPhone);
   const website = cleanText(data.website);
 
   if (website || !namePattern.test(childName) || !namePattern.test(childSurname)) return { valid: false };
-  if (ageGroup !== "5-11" && ageGroup !== "12-18") return { valid: false };
+  if (!Number.isInteger(age) || age < 5 || age > 18) return { valid: false };
   if (parentEmail.length > 254 || !emailPattern.test(parentEmail)) return { valid: false };
   if (parentPhone.length > 40 || parentPhone.replace(/[^0-9]/g, "").length < 7) return { valid: false };
 
   return {
     valid: true,
-    registration: { childName, childSurname, ageGroup, parentEmail, parentPhone },
+    registration: { childName, childSurname, age, parentEmail, parentPhone },
   };
 }
 
 export function registrationEmailText(registration: Omit<Registration, "website">) {
-  const ageGroup = registration.ageGroup === "5-11" ? "5–11 metų" : "12–18 metų";
   return [
     "Nauja Teatro dirbtuvėlės registracijos užklausa",
     "",
     `Vaikas: ${registration.childName} ${registration.childSurname}`,
-    `Amžiaus grupė: ${ageGroup}`,
+    `Vaiko amžius: ${registration.age} m.`,
     `Tėvų / globėjų el. paštas: ${registration.parentEmail}`,
     `Tėvų / globėjų telefonas: ${registration.parentPhone}`,
   ].join("\n");

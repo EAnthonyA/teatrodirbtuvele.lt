@@ -111,7 +111,10 @@ export default function Home() {
           </div>
           <div className="group-list section-shell">
             <article className="group group-young">
-              <div className="group-age" aria-hidden="true">5—11</div>
+              <div className="group-age">
+                <span>5–11 m.</span>
+                <span className="group-schedule">Trečiadienį 17:00</span>
+              </div>
               <div>
                 <p className="group-kicker">Metų vaikams</p>
                 <h3>Žaidžiame istorijas</h3>
@@ -120,7 +123,10 @@ export default function Home() {
               <span className="group-mark" aria-hidden="true">●</span>
             </article>
             <article className="group group-teen">
-              <div className="group-age" aria-hidden="true">12—18</div>
+              <div className="group-age">
+                <span>12–18 m.</span>
+                <span className="group-schedule">Trečiadienį 19:00</span>
+              </div>
               <div>
                 <p className="group-kicker">Metų jaunimui</p>
                 <h3>Kuriame savo balsą</h3>

@@ -5,7 +5,7 @@ import { FormEvent, useMemo, useState } from "react";
 type FormValues = {
   childName: string;
   childSurname: string;
-  ageGroup: "" | "5-11" | "12-18";
+  age: "" | "5" | "6" | "7" | "8" | "9" | "10" | "11" | "12" | "13" | "14" | "15" | "16" | "17" | "18";
   parentEmail: string;
   parentPhone: string;
   website: string;
@@ -17,7 +17,7 @@ type Errors = Partial<Record<Exclude<FieldName, "website">, string>>;
 const initialValues: FormValues = {
   childName: "",
   childSurname: "",
-  ageGroup: "",
+  age: "",
   parentEmail: "",
   parentPhone: "",
   website: "",
@@ -26,7 +26,7 @@ const initialValues: FormValues = {
 const labels: Record<Exclude<FieldName, "website">, string> = {
   childName: "Vaiko vardas",
   childSurname: "Vaiko pavardė",
-  ageGroup: "Amžiaus grupė",
+  age: "Vaiko amžius",
   parentEmail: "Tėvų ar globėjų el. paštas",
   parentPhone: "Tėvų ar globėjų telefonas",
 };
@@ -35,7 +35,7 @@ function validate(values: FormValues): Errors {
   const errors: Errors = {};
   if (values.childName.trim().length < 2) errors.childName = "Įrašykite vaiko vardą.";
   if (values.childSurname.trim().length < 2) errors.childSurname = "Įrašykite vaiko pavardę.";
-  if (!values.ageGroup) errors.ageGroup = "Pasirinkite amžiaus grupę.";
+  if (!values.age) errors.age = "Pasirinkite vaiko amžių.";
   if (!/^\S+@\S+\.\S+$/.test(values.parentEmail.trim())) {
     errors.parentEmail = "Įrašykite galiojantį el. pašto adresą, pavyzdžiui, vardas@pastas.lt.";
   }
@@ -118,22 +118,23 @@ export function RegistrationForm() {
         />
       </div>
       <div className="field">
-        <label htmlFor="ageGroup">{labels.ageGroup}</label>
+        <label htmlFor="age">{labels.age}</label>
         <select
-          aria-describedby={errors.ageGroup ? "ageGroup-error" : undefined}
-          aria-invalid={Boolean(errors.ageGroup)}
-          id="ageGroup"
-          name="ageGroup"
-          onBlur={() => validateField("ageGroup")}
-          onChange={(event) => updateField("ageGroup", event.target.value)}
+          aria-describedby={errors.age ? "age-error" : undefined}
+          aria-invalid={Boolean(errors.age)}
+          id="age"
+          name="age"
+          onBlur={() => validateField("age")}
+          onChange={(event) => updateField("age", event.target.value)}
           required
-          value={values.ageGroup}
+          value={values.age}
         >
-          <option value="">Pasirinkite grupę</option>
-          <option value="5-11">5–11 metų</option>
-          <option value="12-18">12–18 metų</option>
+          <option value="">Pasirinkite vaiko amžių</option>
+          {Array.from({ length: 14 }, (_, index) => index + 5).map((age) => (
+            <option key={age} value={age}>{age} m.</option>
+          ))}
         </select>
-        {errors.ageGroup && <p className="field-error" id="ageGroup-error">{errors.ageGroup}</p>}
+        {errors.age && <p className="field-error" id="age-error">{errors.age}</p>}
       </div>
       <Field
         autoComplete="email"

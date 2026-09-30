@@ -23,7 +23,7 @@ npm run build
 
 ## Registration endpoint
 
-`POST /api/registrations` accepts the child’s name and surname, age group, parent or guardian email address, and phone number. The route validates data again on the server, limits bodies to 12 KB, allows five requests per IP address in 15 minutes, and rejects a hidden honeypot field.
+`POST /api/registrations` accepts the child’s name and surname, age (5–18), parent or guardian email address, and phone number. The route validates data again on the server, limits bodies to 12 KB, allows five requests per IP address in 15 minutes, and rejects a hidden honeypot field.
 
 Registration details are never stored or logged. Gmail SMTP sends a plain-text notification from and to `teatrodirbtuvele@gmail.com`; the parent’s email is only used as the message `Reply-To` address. The browser sees success only after Gmail accepts the send request.
 
